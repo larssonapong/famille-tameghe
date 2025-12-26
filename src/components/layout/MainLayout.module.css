@@ -1,0 +1,136 @@
+:root {
+  --bg: #f9f6ef;
+  --card: #ffffff;
+  --border: rgba(13, 26, 17, 0.15);
+  --text: #1f2a24;
+  --accent: #c58f00;
+  --secondary: #2f4858;
+  --radius: 16px;
+  --shadow: 0 20px 60px rgba(15, 42, 29, 0.08);
+  --gradient: radial-gradient(circle at top left, #f9de9c, #f9f6ef 55%);
+}
+
+.shell {
+  min-height: 100vh;
+  background: var(--gradient);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 1.5rem clamp(1.5rem, 4vw, 4rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+}
+
+.brand a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brandTop {
+  display: block;
+  font-size: 0.9rem;
+  letter-spacing: 0.3rem;
+  text-transform: uppercase;
+  color: var(--secondary);
+}
+
+.brandBottom {
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-weight: 600;
+  letter-spacing: 0.2rem;
+}
+
+.nav {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--secondary);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.navLinkActive {
+  background: rgba(197, 143, 0, 0.12);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.navLink:not(.navLinkActive):hover {
+  border-color: rgba(197, 143, 0, 0.3);
+}
+
+.menuButton {
+  display: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.mobileNav {
+  display: none;
+}
+
+.main {
+  flex: 1;
+  padding: 0 clamp(1.5rem, 5vw, 5rem) 4rem;
+}
+
+.footer {
+  padding: 1.5rem clamp(1.5rem, 4vw, 4rem);
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(31, 42, 36, 0.6);
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .menuButton {
+    display: inline-flex;
+  }
+
+  .mobileNav {
+    display: grid;
+    padding: 0 1.5rem 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .mobileLink {
+    text-decoration: none;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid transparent;
+    color: var(--secondary);
+    font-weight: 500;
+  }
+
+  .mobileLinkActive {
+    border-color: var(--accent);
+    background: rgba(197, 143, 0, 0.16);
+  }
+}

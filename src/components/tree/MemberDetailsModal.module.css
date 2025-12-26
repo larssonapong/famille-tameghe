@@ -1,0 +1,89 @@
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(3, 10, 6, 0.55);
+  z-index: 9999;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, calc(100% - 2rem));
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  background: #fffdf8;
+  border-radius: 12px;
+  padding: 2rem;
+  border: 1px solid rgba(19, 38, 27, 0.1);
+  box-shadow: 0 30px 70px rgba(8, 22, 14, 0.35);
+  z-index: 10000;
+  margin: 0;
+  animation: slideIn 0.25s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -45%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.title {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: 1.85rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 1.5rem;
+  color: rgba(31, 42, 36, 0.65);
+  font-weight: 600;
+}
+
+.bio {
+  background: rgba(240, 234, 216, 0.55);
+  border-radius: 18px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: rgba(31, 42, 36, 0.8);
+}
+
+.bio p {
+  margin: 0.2rem 0;
+}
+
+.story {
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+  color: rgba(31, 42, 36, 0.85);
+}
+
+.closeButton {
+  width: 100%;
+  border: none;
+  border-radius: 999px;
+  padding: 0.9rem 1rem;
+  background: linear-gradient(120deg, #1d7c83, #2f4c3a);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
