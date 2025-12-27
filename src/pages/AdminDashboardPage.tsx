@@ -152,7 +152,7 @@ const AdminDashboardPage = () => {
                   {activeTab === 'members' && data?.members.map((member) => (
                     <div key={member.id} className={styles.tableRow}>
                       <div className={styles.tableCell}>
-                        <strong>{member.prenom} {member.nom}</strong>
+                        <strong>{member.nom} {member.prenom}</strong>
                         {member.surnom && <span className={styles.tableMuted}> ({member.surnom})</span>}
                         {member.isFamilyHead && <span className={styles.tableBadge} style={{ marginLeft: '0.5rem' }}>Chef de famille</span>}
                       </div>
@@ -173,9 +173,9 @@ const AdminDashboardPage = () => {
                     return (
                       <div key={rel.id} className={styles.tableRow}>
                         <div className={styles.tableCell}>
-                          <strong>{parent?.prenom} {parent?.nom}</strong>
+                          <strong>{parent?.nom} {parent?.prenom}</strong>
                           <span className={styles.tableMuted}> → </span>
-                          <strong>{enfant?.prenom} {enfant?.nom}</strong>
+                          <strong>{enfant?.nom} {enfant?.prenom}</strong>
                         </div>
                         <div className={styles.tableCell}>
                           <span className={styles.tableBadge}>{rel.typeRelation}</span>
@@ -192,9 +192,9 @@ const AdminDashboardPage = () => {
                     return (
                       <div key={union.id} className={styles.tableRow}>
                         <div className={styles.tableCell}>
-                          <strong>{membre1?.prenom} {membre1?.nom}</strong>
+                          <strong>{membre1?.nom} {membre1?.prenom}</strong>
                           <span className={styles.tableMuted}> ♥ </span>
-                          <strong>{membre2?.prenom} {membre2?.nom}</strong>
+                          <strong>{membre2?.nom} {membre2?.prenom}</strong>
                         </div>
                         <div className={styles.tableCell}>
                           {union.dateDebut && <span className={styles.tableMuted}>Depuis {new Date(union.dateDebut).getFullYear()}</span>}
@@ -226,7 +226,7 @@ const AdminDashboardPage = () => {
         targetId={deletingMemberId}
         targetLabel={
           deletingMemberId 
-            ? `${data?.members.find(m => m.id === deletingMemberId)?.prenom ?? ''} ${data?.members.find(m => m.id === deletingMemberId)?.nom ?? ''}`.trim() || 'ce membre'
+            ? `${data?.members.find(m => m.id === deletingMemberId)?.nom ?? ''} ${data?.members.find(m => m.id === deletingMemberId)?.prenom ?? ''}`.trim() || 'ce membre'
             : ''
         }
         table="family_members"

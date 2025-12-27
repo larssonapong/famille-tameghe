@@ -98,7 +98,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
                 <option value="">Sélectionner un parent</option>
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.prenom} {member.nom}
+                    {member.nom} {member.prenom}
                     {member.surnom ? ` (${member.surnom})` : ''}
                   </option>
                 ))}
@@ -115,7 +115,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
                 <option value="">Sélectionner un parent</option>
                 {members.map((member) => (
                   <option key={member.id} value={member.id}>
-                    {member.prenom} {member.nom}
+                    {member.nom} {member.prenom}
                     {member.surnom ? ` (${member.surnom})` : ''}
                   </option>
                 ))}
@@ -133,7 +133,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
               <option value="">Sélectionner un enfant</option>
               {members.map((member) => (
                 <option key={member.id} value={member.id}>
-                  {member.prenom} {member.nom}
+                  {member.nom} {member.prenom}
                   {member.surnom ? ` (${member.surnom})` : ''}
                 </option>
               ))}

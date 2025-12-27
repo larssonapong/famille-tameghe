@@ -18,14 +18,14 @@ const MemberDetailsModal = ({ member, onClose, partnerOf }: MemberDetailsModalPr
         className={styles.panel}
         role="dialog"
         aria-modal="true"
-        aria-label={`Détails pour ${member.prenom} ${member.nom}`}
+        aria-label={`Détails pour ${member.nom} ${member.prenom}`}
       >
             <h2 className={styles.title}>
-              {member.prenom} {member.nom}
+              {member.nom} {member.prenom}
             </h2>
             <p className={styles.subtitle}>
               {partnerOf
-                ? `${member.genre === 'homme' ? 'Époux' : 'Épouse'} de ${partnerOf.prenom} ${partnerOf.nom}`
+                ? `${member.genre === 'homme' ? 'Époux' : 'Épouse'} de ${partnerOf.nom} ${partnerOf.prenom}`
                 : `${member.isFamilyHead ? 'Chef de famille' : 'Membre de la lignée'} · ${member.genre === 'homme' ? 'Homme' : 'Femme'}`}
             </p>
             <div className={styles.bio}>

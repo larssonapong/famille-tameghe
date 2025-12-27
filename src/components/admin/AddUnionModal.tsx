@@ -75,7 +75,7 @@ const AddUnionModal = ({ isOpen, onClose, members }: AddUnionModalProps) => {
               <option value="">Sélectionner un membre</option>
               {members.map((member) => (
                 <option key={member.id} value={member.id}>
-                  {member.prenom} {member.nom}
+                  {member.nom} {member.prenom}
                   {member.surnom ? ` (${member.surnom})` : ''}
                 </option>
               ))}
@@ -92,7 +92,7 @@ const AddUnionModal = ({ isOpen, onClose, members }: AddUnionModalProps) => {
               <option value="">Sélectionner un membre</option>
               {members.map((member) => (
                 <option key={member.id} value={member.id}>
-                  {member.prenom} {member.nom}
+                  {member.nom} {member.prenom}
                   {member.surnom ? ` (${member.surnom})` : ''}
                 </option>
               ))}

@@ -70,6 +70,11 @@ function FamilyTreeCanvas({
       const frameColor =
         member.cadreCouleur ??
         fallbackColors[member.generationIndex ? member.generationIndex % fallbackColors.length : 0]
+      const partnerFrameColor =
+        partner?.cadreCouleur ??
+        fallbackColors[
+          partner?.generationIndex ? partner.generationIndex % fallbackColors.length : 0
+        ]
 
       const handleSelect = () => onSelectMember?.(member)
 
@@ -97,12 +102,12 @@ function FamilyTreeCanvas({
               style={{ borderColor: frameColor }}
               onClick={handleSelect}
               onKeyDown={handleKeyDown}
-              aria-label={`Voir ${member.prenom} ${member.nom}`}
+              aria-label={`Voir ${member.nom} ${member.prenom}`}
             >
               <div className={styles.nodeHeading}>
                 <div>
                   <div className={styles.nodeName}>
-                    {member.prenom} {member.nom}
+                    {member.nom} {member.prenom}
                   </div>
                   {member.surnom ? <p className={styles.nodeSurnom}>{member.surnom}</p> : null}
                 </div>
@@ -138,6 +143,7 @@ function FamilyTreeCanvas({
                   role="button"
                   tabIndex={0}
                   className={styles.partnerCard}
+                  style={{ borderColor: partnerFrameColor }}
                   onClick={() => onSelectMember?.(partner, member)}
                   onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
                     if (event.key === 'Enter' || event.key === ' ') {
@@ -145,12 +151,12 @@ function FamilyTreeCanvas({
                       onSelectMember?.(partner, member)
                     }
                   }}
-                  aria-label={`Voir ${partner.prenom} ${partner.nom}`}
+                  aria-label={`Voir ${partner.nom} ${partner.prenom}`}
                 >
                   <div className={styles.nodeHeading}>
                     <div>
                       <div className={styles.partnerName}>
-                        {partner.prenom} {partner.nom}
+                        {partner.nom} {partner.prenom}
                       </div>
                       {partner.surnom ? <p className={styles.nodeSurnom}>{partner.surnom}</p> : null}
                     </div>
@@ -282,7 +288,7 @@ function buildNodeWithUnions(
 
   if (unions.length === 0) {
     return {
-      name: `${member.prenom} ${member.nom}`,
+      name: `${member.nom} ${member.prenom}`,
       member,
       attributes: buildAttributes(member),
       children: [],
@@ -299,7 +305,7 @@ function buildNodeWithUnions(
       .filter((node): node is FamilyNodeDatum => Boolean(node))
 
     return {
-      name: `${member.prenom} ${member.nom} & ${partner?.prenom ?? '?'} ${partner?.nom ?? '?'}`,
+      name: `${member.nom} ${member.prenom} & ${partner?.nom ?? '?'} ${partner?.prenom ?? '?'}`,
       member,
       partner,
       unionId: union.unionId,
@@ -315,7 +321,7 @@ function buildNodeWithUnions(
   }
 
   return {
-    name: `${member.prenom} ${member.nom}`,
+    name: `${member.nom} ${member.prenom}`,
     member,
     attributes: buildAttributes(member),
     children: unionNodes,

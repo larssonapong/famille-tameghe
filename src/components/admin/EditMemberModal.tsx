@@ -86,21 +86,21 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.row}>
             <div className={styles.field}>
-              <label>Prénom *</label>
-              <input
-                type="text"
-                required
-                value={formData.prenom}
-                onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
-              />
-            </div>
-            <div className={styles.field}>
               <label>Nom *</label>
               <input
                 type="text"
                 required
                 value={formData.nom}
                 onChange={(e) => setFormData({ ...formData, nom: e.target.value })}
+              />
+            </div>
+            <div className={styles.field}>
+              <label>Prénom *</label>
+              <input
+                type="text"
+                required
+                value={formData.prenom}
+                onChange={(e) => setFormData({ ...formData, prenom: e.target.value })}
               />
             </div>
           </div>
