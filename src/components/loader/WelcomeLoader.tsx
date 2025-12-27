@@ -41,11 +41,11 @@ const WelcomeLoader = () => {
             exit={{ y: -30, opacity: 0 }}
             transition={{ duration: 0.8 }}
           >
+            <h1 className={styles.title}>Peuh Tameghe</h1>
             <p className={styles.subtitle}>« Pu su pepong »</p>
-            <h1 className={styles.title}>Soyez les bienvenus</h1>
             <p className={styles.message}>
-              La maison familiale s’ouvre pour partager l’histoire des Bamougoum, de nos ancêtres
-              à la nouvelle génération.
+              La famille Tameghe s’ouvre pour partager l’histoire des Bamougoum, de nos ancêtres à
+              chaque nouvelle génération.
             </p>
           </motion.div>
         </motion.div>

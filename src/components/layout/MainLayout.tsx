@@ -10,7 +10,7 @@ const MainLayout = ({ children }: { children?: React.ReactNode }) => {
       </main>
 
       <footer className={styles.footer}>
-        <p>© {new Date().getFullYear()} Famille Tameghe · Bamougoum</p>
+        <p>© {new Date().getFullYear()} Famille Tameghe · Bamougoum · Made by Larsson Apong</p>
       </footer>
     </div>
   )
