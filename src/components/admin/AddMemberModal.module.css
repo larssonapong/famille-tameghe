@@ -103,6 +103,99 @@
   font-family: inherit;
 }
 
+.fieldHint {
+  display: block;
+  font-size: 0.8rem;
+  color: rgba(31, 42, 36, 0.6);
+  font-weight: 500;
+  margin-top: 0.15rem;
+}
+
+.multiInput {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.multiRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.photoUpload {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.photoPreview {
+  width: 84px;
+  height: 84px;
+  border-radius: 14px;
+  background: rgba(19, 38, 27, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: rgba(31, 42, 36, 0.5);
+  background-size: cover;
+  background-position: center;
+  border: 1px dashed rgba(19, 38, 27, 0.2);
+}
+
+.fileInputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fileLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  background: rgba(19, 38, 27, 0.08);
+  color: #1f2a24;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.fileLabel input {
+  display: none;
+}
+
+.addChip,
+.removeChip {
+  border: 1px dashed rgba(209, 163, 71, 0.6);
+  background: rgba(209, 163, 71, 0.08);
+  color: #c58f00;
+  border-radius: 8px;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.addChip:hover,
+.removeChip:hover {
+  background: rgba(209, 163, 71, 0.15);
+}
+
+.removeChip {
+  border-style: solid;
+  background: rgba(178, 59, 59, 0.08);
+  color: #b23b3b;
+  border-color: rgba(178, 59, 59, 0.4);
+  padding: 0.45rem 0.8rem;
+}
+
+.removeChip:hover {
+  background: rgba(178, 59, 59, 0.15);
+}
+
 .checkbox {
   display: flex;
   align-items: center;

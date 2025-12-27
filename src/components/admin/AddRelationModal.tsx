@@ -23,7 +23,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
   const [formData, setFormData] = useState({
     parentAId: '',
     parentBId: '',
-    childId: '',
+    childIds: [''],
     typeRelation: relationOptions[0].value,
   })
 
@@ -34,11 +34,22 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
         throw new Error('Sélectionnez au moins un parent')
       }
 
-      const payload: Database['public']['Tables']['family_relationships']['Insert'][] = parents.map((parentId) => ({
-        parent_id: parentId,
-        child_id: data.childId,
-        type_relation: data.typeRelation,
-      }))
+      const childIds = data.childIds.filter((id) => id.trim() !== '')
+      if (childIds.length === 0) {
+        throw new Error('Ajoutez au moins un enfant')
+      }
+
+      const payload: Database['public']['Tables']['family_relationships']['Insert'][] = []
+
+      parents.forEach((parentId) => {
+        childIds.forEach((childId) => {
+          payload.push({
+            parent_id: parentId,
+            child_id: childId,
+            type_relation: data.typeRelation,
+          })
+        })
+      })
 
       const { error } = await supabase.from('family_relationships').insert(payload)
       if (error) throw error
@@ -49,7 +60,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
       setFormData({
         parentAId: '',
         parentBId: '',
-        childId: '',
+        childIds: [''],
         typeRelation: 'biologique',
       })
     },
@@ -68,11 +79,37 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
       return
     }
 
-    if (parents.some((parentId) => parentId === formData.childId)) {
+    const selectedChildIds = formData.childIds.filter((id) => id.trim() !== '')
+    if (selectedChildIds.length === 0) {
+      alert('Ajoutez au moins un enfant')
+      return
+    }
+
+    if (selectedChildIds.some((childId) => parents.includes(childId))) {
       alert('Un membre ne peut pas être son propre parent')
       return
     }
+
     mutation.mutate(formData)
+  }
+
+  const handleChildChange = (index: number, value: string) => {
+    setFormData((prev) => {
+      const nextChildIds = [...prev.childIds]
+      nextChildIds[index] = value
+      return { ...prev, childIds: nextChildIds }
+    })
+  }
+
+  const addChildField = () => {
+    setFormData((prev) => ({ ...prev, childIds: [...prev.childIds, ''] }))
+  }
+
+  const removeChildField = (index: number) => {
+    setFormData((prev) => {
+      const nextChildIds = prev.childIds.filter((_, idx) => idx !== index)
+      return { ...prev, childIds: nextChildIds.length ? nextChildIds : [''] }
+    })
   }
 
   if (!isOpen) return null
@@ -124,20 +161,46 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
           </div>
 
           <div className={styles.field}>
-            <label>Enfant *</label>
-            <select
-              required
-              value={formData.childId}
-              onChange={(e) => setFormData({ ...formData, childId: e.target.value })}
-            >
-              <option value="">Sélectionner un enfant</option>
-              {members.map((member) => (
-                <option key={member.id} value={member.id}>
-                  {member.nom} {member.prenom}
-                  {member.surnom ? ` (${member.surnom})` : ''}
-                </option>
+            <label>
+              Enfants *
+              <span className={styles.fieldHint}>Sélectionnez un ou plusieurs enfants</span>
+            </label>
+            <div className={styles.multiInput}>
+              {formData.childIds.map((childId, index) => (
+                <div key={`child-${index}`} className={styles.multiRow}>
+                  <select
+                    required
+                    value={childId}
+                    onChange={(e) => handleChildChange(index, e.target.value)}
+                  >
+                    <option value="">Sélectionner un enfant</option>
+                    {members.map((member) => (
+                      <option key={member.id} value={member.id}>
+                        {member.nom} {member.prenom}
+                        {member.surnom ? ` (${member.surnom})` : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {formData.childIds.length > 1 && (
+                    <button
+                      type="button"
+                      className={styles.removeChip}
+                      onClick={() => removeChildField(index)}
+                      aria-label="Supprimer cet enfant"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
               ))}
-            </select>
+              <button
+                type="button"
+                className={styles.addChip}
+                onClick={addChildField}
+              >
+                + Ajouter un enfant
+              </button>
+            </div>
           </div>
 
           <div className={styles.field}>

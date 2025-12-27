@@ -7,4 +7,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error('Missing Supabase environment variables. Please check your .env.local file.')
 }
 
+export const MEMBER_PHOTOS_BUCKET = import.meta.env.VITE_SUPABASE_MEMBER_BUCKET ?? 'member-photos'
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)

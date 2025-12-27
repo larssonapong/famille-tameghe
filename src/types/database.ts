@@ -22,6 +22,7 @@ export interface Database {
           generation_index: number | null
           is_family_head: boolean
           bio: string | null
+          profile_image_url: string | null
           created_at: string
           updated_at: string
         }
@@ -37,6 +38,7 @@ export interface Database {
           generation_index?: number | null
           is_family_head?: boolean
           bio?: string | null
+          profile_image_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -52,6 +54,7 @@ export interface Database {
           generation_index?: number | null
           is_family_head?: boolean
           bio?: string | null
+          profile_image_url?: string | null
           created_at?: string
           updated_at?: string
         }

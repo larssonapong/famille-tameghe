@@ -13,10 +13,13 @@ export interface FamilyMember {
   dateDeces?: string | null
   genre: Gender
   photoUrl?: string | null
+  photoPath?: string | null
   bio?: string
   cadreCouleur?: string
   generationIndex?: number
   isFamilyHead?: boolean
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface FamilyRelationship {
@@ -24,6 +27,7 @@ export interface FamilyRelationship {
   parentId: string
   childId: string
   typeRelation: RelationshipType
+  createdAt?: string
 }
 
 export interface FamilyUnion {
@@ -34,6 +38,8 @@ export interface FamilyUnion {
   dateFin?: string | null
   typeRelation: UnionType
   notes?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface FamilyTreePayload {

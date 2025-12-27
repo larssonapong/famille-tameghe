@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { Database } from '../../types/database'
+import { uploadMemberPhoto } from '../../utils/uploadMemberPhoto'
 import styles from './AddMemberModal.module.css'
 
 interface AddMemberModalProps {
@@ -23,20 +24,42 @@ const AddMemberModal = ({ isOpen, onClose }: AddMemberModalProps) => {
     isFamilyHead: false,
     bio: '',
   })
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState('')
+
+  useEffect(() => {
+    return () => {
+      if (photoPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(photoPreview)
+      }
+    }
+  }, [photoPreview])
 
   const mutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async ({
+      values,
+      file,
+    }: {
+      values: typeof formData
+      file: File | null
+    }) => {
+      let photoPath: string | null = null
+      if (file) {
+        photoPath = await uploadMemberPhoto(file)
+      }
+
       const payload: Database['public']['Tables']['family_members']['Insert'] = {
-        prenom: data.prenom,
-        nom: data.nom,
-        surnom: data.surnom || null,
-        genre: data.genre,
-        date_naissance: data.dateNaissance || null,
-        date_deces: data.dateDeces || null,
-        cadre_couleur: data.cadreCouleur,
-        generation_index: Number(data.generationIndex),
-        is_family_head: data.isFamilyHead,
-        bio: data.bio || null,
+        prenom: values.prenom,
+        nom: values.nom,
+        surnom: values.surnom || null,
+        profile_image_url: photoPath,
+        genre: values.genre,
+        date_naissance: values.dateNaissance || null,
+        date_deces: values.dateDeces || null,
+        cadre_couleur: values.cadreCouleur,
+        generation_index: Number(values.generationIndex),
+        is_family_head: values.isFamilyHead,
+        bio: values.bio || null,
       }
 
       const { error } = await supabase.from('family_members').insert(payload)
@@ -57,12 +80,23 @@ const AddMemberModal = ({ isOpen, onClose }: AddMemberModalProps) => {
         isFamilyHead: false,
         bio: '',
       })
+      setPhotoFile(null)
+      setPhotoPreview('')
     },
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    mutation.mutate(formData)
+    mutation.mutate({ values: formData, file: photoFile })
+  }
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    setPhotoFile(file ?? null)
+    if (photoPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(photoPreview)
+    }
+    setPhotoPreview(file ? URL.createObjectURL(file) : '')
   }
 
   if (!isOpen) return null
@@ -105,6 +139,33 @@ const AddMemberModal = ({ isOpen, onClose }: AddMemberModalProps) => {
               value={formData.surnom}
               onChange={(e) => setFormData({ ...formData, surnom: e.target.value })}
             />
+          </div>
+
+          <div className={styles.field}>
+            <label>Photo</label>
+            <div className={styles.photoUpload}>
+              <div
+                className={styles.photoPreview}
+                style={
+                  photoPreview
+                    ? { backgroundImage: `url(${photoPreview})` }
+                    : undefined
+                }
+              >
+                {!photoPreview && <span>?</span>}
+              </div>
+              <div className={styles.fileInputWrapper}>
+                <label className={styles.fileLabel}>
+                  Importer une photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+                <p className={styles.fieldHint}>PNG ou JPG · max 5Mo</p>
+              </div>
+            </div>
           </div>
 
           <div className={styles.row}>

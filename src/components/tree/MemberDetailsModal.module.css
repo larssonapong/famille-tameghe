@@ -23,12 +23,11 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(420px, calc(100% - 2rem));
+  width: min(460px, calc(100% - 2rem));
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
   background: #fffdf8;
   border-radius: 12px;
-  padding: 2rem;
   border: 1px solid rgba(19, 38, 27, 0.1);
   box-shadow: 0 30px 70px rgba(8, 22, 14, 0.35);
   z-index: 10000;
@@ -36,15 +35,65 @@
   animation: slideIn 0.25s ease;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -45%);
-  }
-  to {
-    opacity: 1;
-    transform: translate(-50%, -50%);
-  }
+.card {
+  padding: 2rem;
+}
+
+.hero {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.avatar {
+  width: 124px;
+  height: 124px;
+  border-radius: 999px;
+  background: linear-gradient(145deg, #d1a347, #f6d390);
+  border: 6px solid #fff;
+  box-shadow: 0 15px 30px rgba(8, 22, 14, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: #1f2a24;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatarHasPhoto {
+  background-color: transparent;
+  cursor: zoom-in;
+}
+
+.avatarHasPhoto span {
+  display: none;
+}
+
+.avatarHasPhoto:focus-visible {
+  outline: 3px solid rgba(31, 124, 147, 0.5);
+  outline-offset: 4px;
+}
+
+.avatarHasPhoto:hover {
+  transform: scale(1.02);
+  box-shadow: 0 20px 30px rgba(8, 22, 14, 0.25);
+}
+
+.content {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .title {
@@ -57,6 +106,29 @@
   margin: 0.25rem 0 1.5rem;
   color: rgba(31, 42, 36, 0.65);
   font-weight: 600;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+
+.metaCard {
+  background: rgba(240, 234, 216, 0.55);
+  border-radius: 14px;
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+  color: rgba(31, 42, 36, 0.85);
+  border: 1px solid rgba(19, 38, 27, 0.08);
+}
+
+.metaLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(31, 42, 36, 0.55);
 }
 
 .bio {
@@ -72,7 +144,7 @@
 }
 
 .story {
-  margin: 0 0 1.5rem;
+  margin: 0;
   line-height: 1.5;
   color: rgba(31, 42, 36, 0.85);
 }
@@ -86,4 +158,66 @@
   color: #fff;
   font-weight: 600;
   cursor: pointer;
+  border: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.closeButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(29, 124, 131, 0.25);
+}
+
+.photoViewerBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 10, 6, 0.8);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.photoViewer {
+  position: relative;
+  background: #0b0f0c;
+  border-radius: 20px;
+  padding: 1.25rem 1.25rem 2.5rem;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+  max-width: min(520px, 90vw);
+  width: 100%;
+}
+
+.photoViewer img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.photoViewerClose {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.6rem 2rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(120deg, #1d7c83, #2f4c3a);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.photoViewerClose:hover {
+  transform: translate(-50%, -2px);
+  box-shadow: 0 14px 30px rgba(29, 124, 131, 0.35);
+}
+
+.photoViewerClose:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 4px;
 }

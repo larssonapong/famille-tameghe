@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { FamilyMember } from '../../types/family'
+import { uploadMemberPhoto, getPublicMemberPhotoUrl } from '../../utils/uploadMemberPhoto'
 import styles from './AddMemberModal.module.css'
 
 interface EditMemberModalProps {
@@ -15,6 +16,7 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
     prenom: '',
     nom: '',
     surnom: '',
+    photoPath: '',
     genre: 'homme' as 'homme' | 'femme',
     dateNaissance: '',
     dateDeces: '',
@@ -23,6 +25,14 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
     isFamilyHead: false,
     bio: '',
   })
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState('')
+
+  useEffect(() => {
+    if (photoPreview.startsWith('blob:')) {
+      return () => URL.revokeObjectURL(photoPreview)
+    }
+  }, [photoPreview])
 
   useEffect(() => {
     if (member) {
@@ -30,6 +40,7 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
         prenom: member.prenom,
         nom: member.nom,
         surnom: member.surnom || '',
+        photoPath: member.photoPath ?? '',
         genre: member.genre,
         dateNaissance: member.dateNaissance || '',
         dateDeces: member.dateDeces || '',
@@ -38,25 +49,38 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
         isFamilyHead: member.isFamilyHead || false,
         bio: member.bio || '',
       })
+      setPhotoFile(null)
+      setPhotoPreview('')
     }
   }, [member])
 
   const mutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
+    mutationFn: async ({
+      values,
+      file,
+    }: {
+      values: typeof formData
+      file: File | null
+    }) => {
       if (!member) return
+      let nextPhotoPath: string | null = values.photoPath ? values.photoPath : null
+      if (file) {
+        nextPhotoPath = await uploadMemberPhoto(file)
+      }
       const { error } = await supabase
         .from('family_members')
         .update({
-          prenom: data.prenom,
-          nom: data.nom,
-          surnom: data.surnom || null,
-          genre: data.genre,
-          date_naissance: data.dateNaissance || null,
-          date_deces: data.dateDeces || null,
-          cadre_couleur: data.cadreCouleur,
-          generation_index: data.generationIndex,
-          is_family_head: data.isFamilyHead,
-          bio: data.bio || null,
+          prenom: values.prenom,
+          nom: values.nom,
+          surnom: values.surnom || null,
+          profile_image_url: nextPhotoPath,
+          genre: values.genre,
+          date_naissance: values.dateNaissance || null,
+          date_deces: values.dateDeces || null,
+          cadre_couleur: values.cadreCouleur,
+          generation_index: values.generationIndex,
+          is_family_head: values.isFamilyHead,
+          bio: values.bio || null,
         })
         .eq('id', member.id)
       if (error) throw error
@@ -69,8 +93,28 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    mutation.mutate(formData)
+    mutation.mutate({ values: formData, file: photoFile })
   }
+
+  const handlePhotoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    setPhotoFile(file)
+    if (photoPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(photoPreview)
+    }
+    setPhotoPreview(file ? URL.createObjectURL(file) : '')
+  }
+
+  const handleRemovePhoto = () => {
+    if (photoPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(photoPreview)
+    }
+    setPhotoPreview('')
+    setPhotoFile(null)
+    setFormData((prev) => ({ ...prev, photoPath: '' }))
+  }
+
+  const currentPhotoUrl = photoPreview || getPublicMemberPhotoUrl(formData.photoPath)
 
   if (!member) return null
 
@@ -112,6 +156,38 @@ const EditMemberModal = ({ member, onClose }: EditMemberModalProps) => {
               value={formData.surnom}
               onChange={(e) => setFormData({ ...formData, surnom: e.target.value })}
             />
+          </div>
+
+          <div className={styles.field}>
+            <label>Photo</label>
+            <div className={styles.photoUpload}>
+              <div
+                className={styles.photoPreview}
+                style={
+                  currentPhotoUrl
+                    ? { backgroundImage: `url(${currentPhotoUrl})` }
+                    : undefined
+                }
+              >
+                {!currentPhotoUrl && <span>?</span>}
+              </div>
+              <div className={styles.fileInputWrapper}>
+                <label className={styles.fileLabel}>
+                  Importer une photo
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoChange}
+                  />
+                </label>
+                <p className={styles.fieldHint}>PNG ou JPG · max 5Mo</p>
+                {(formData.photoPath || photoPreview) && (
+                  <button type="button" className={styles.removeChip} onClick={handleRemovePhoto}>
+                    Supprimer la photo
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
           <div className={styles.row}>

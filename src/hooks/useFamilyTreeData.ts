@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
+import { getPublicMemberPhotoUrl } from '../utils/uploadMemberPhoto'
 import type { FamilyTreePayload } from '../types/family'
 
 const FAMILY_TREE_QUERY_KEY = ['family-tree']
@@ -34,15 +35,20 @@ async function fetchFamilyTree(): Promise<FamilyTreePayload> {
       dateDeces: row.date_deces ?? undefined,
       genre: row.genre,
       bio: row.bio ?? undefined,
+      photoPath: row.profile_image_url ?? undefined,
+      photoUrl: getPublicMemberPhotoUrl(row.profile_image_url),
       cadreCouleur: row.cadre_couleur ?? undefined,
       generationIndex: row.generation_index ?? undefined,
       isFamilyHead: row.is_family_head ?? false,
+      createdAt: row.created_at ?? undefined,
+      updatedAt: row.updated_at ?? undefined,
     })),
     relationships: (relationships || []).map((row) => ({
       id: row.id,
       parentId: row.parent_id,
       childId: row.child_id,
       typeRelation: row.type_relation,
+      createdAt: row.created_at ?? undefined,
     })),
     unions: (unions || []).map((row) => ({
       id: row.id,
@@ -52,6 +58,8 @@ async function fetchFamilyTree(): Promise<FamilyTreePayload> {
       dateFin: row.date_fin ?? undefined,
       typeRelation: row.type_relation,
       notes: row.notes ?? undefined,
+      createdAt: row.created_at ?? undefined,
+      updatedAt: row.updated_at ?? undefined,
     })),
   }
 }
