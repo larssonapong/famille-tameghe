@@ -3,21 +3,53 @@ import WelcomeLoader from '../components/loader/WelcomeLoader'
 import FamilyTreeCanvas from '../components/tree/FamilyTreeCanvas'
 import MemberDetailsModal from '../components/tree/MemberDetailsModal'
 import { useFamilyTreeData } from '../hooks/useFamilyTreeData'
-import type { FamilyMember, FamilyTreePayload } from '../types/family'
+import type { FamilyMember, FamilyRelationship, FamilyTreePayload, FamilyUnion } from '../types/family'
 
 const FamilyTreePage = () => {
   const { data, isLoading, error } = useFamilyTreeData()
   const [selectedMember, setSelectedMember] = useState<FamilyMember | null>(null)
-  const [partnerContext, setPartnerContext] = useState<FamilyMember | undefined>(undefined)
 
   const treeData: FamilyTreePayload | null = useMemo(() => {
     if (!data) return null
     return data
   }, [data])
 
-  const handleSelectMember = (member: FamilyMember, isPartnerOf?: FamilyMember) => {
+  const memberById = useMemo(() => {
+    const map = new Map<string, FamilyMember>()
+    data?.members.forEach((member) => map.set(member.id, member))
+    return map
+  }, [data?.members])
+
+  const unionsByMember = useMemo(() => {
+    const map = new Map<string, Array<{ union: FamilyUnion; partner: FamilyMember | null }>>()
+    if (!data?.unions) return map
+
+    data.unions.forEach((union) => {
+      const partnerForA = memberById.get(union.partenaireBId) ?? null
+      const partnerForB = memberById.get(union.partenaireAId) ?? null
+
+      if (!map.has(union.partenaireAId)) map.set(union.partenaireAId, [])
+      map.get(union.partenaireAId)!.push({ union, partner: partnerForA })
+
+      if (!map.has(union.partenaireBId)) map.set(union.partenaireBId, [])
+      map.get(union.partenaireBId)!.push({ union, partner: partnerForB })
+    })
+
+    return map
+  }, [data?.unions, memberById])
+
+  const selectedMemberUnions = selectedMember ? unionsByMember.get(selectedMember.id) ?? [] : undefined
+  const lineageMemberIds = useMemo(() => {
+    const ids = new Set<string>()
+    data?.relationships.forEach((relationship: FamilyRelationship) => {
+      ids.add(relationship.childId)
+    })
+    return ids
+  }, [data?.relationships])
+  const selectedMemberIsLineage = selectedMember ? lineageMemberIds.has(selectedMember.id) : false
+
+  const handleSelectMember = (member: FamilyMember) => {
     setSelectedMember(member)
-    setPartnerContext(isPartnerOf)
   }
 
   return (
@@ -60,9 +92,9 @@ const FamilyTreePage = () => {
         member={selectedMember}
         onClose={() => {
           setSelectedMember(null)
-          setPartnerContext(undefined)
         }}
-        partnerOf={partnerContext}
+        unions={selectedMemberUnions}
+        isLineageMember={selectedMemberIsLineage}
       />
     </>
   )

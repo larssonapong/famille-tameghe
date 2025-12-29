@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase'
 import type { FamilyMember } from '../../types/family'
@@ -20,6 +20,13 @@ const relationOptions: { value: Database['public']['Tables']['family_relationshi
 
 const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) => {
   const queryClient = useQueryClient()
+  const sortedMembers = useMemo(() => {
+    return [...members].sort((a, b) => {
+      const nameA = `${a.nom} ${a.prenom}`.trim().toLocaleLowerCase()
+      const nameB = `${b.nom} ${b.prenom}`.trim().toLocaleLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+  }, [members])
   const [formData, setFormData] = useState({
     parentAId: '',
     parentBId: '',
@@ -133,7 +140,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
                 onChange={(e) => setFormData({ ...formData, parentAId: e.target.value })}
               >
                 <option value="">Sélectionner un parent</option>
-                {members.map((member) => (
+                {sortedMembers.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.nom} {member.prenom}
                     {member.surnom ? ` (${member.surnom})` : ''}
@@ -174,7 +181,7 @@ const AddRelationModal = ({ isOpen, onClose, members }: AddRelationModalProps) =
                     onChange={(e) => handleChildChange(index, e.target.value)}
                   >
                     <option value="">Sélectionner un enfant</option>
-                    {members.map((member) => (
+                    {sortedMembers.map((member) => (
                       <option key={member.id} value={member.id}>
                         {member.nom} {member.prenom}
                         {member.surnom ? ` (${member.surnom})` : ''}

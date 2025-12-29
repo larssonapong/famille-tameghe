@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { Users, GitBranch, Heart, LogOut, Home } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 import { useFamilyTreeData } from '../hooks/useFamilyTreeData'
+import type { FamilyMember, FamilyUnion } from '../types/family'
 import AddMemberModal from '../components/admin/AddMemberModal'
 import EditMemberModal from '../components/admin/EditMemberModal'
 import DeleteConfirmModal from '../components/admin/DeleteConfirmModal'
 import AddRelationModal from '../components/admin/AddRelationModal'
 import AddUnionModal from '../components/admin/AddUnionModal'
+import EditUnionModal from '../components/admin/EditUnionModal'
 import styles from './AdminDashboardPage.module.css'
 
 type TabType = 'members' | 'relationships' | 'unions'
@@ -24,6 +26,7 @@ const AdminDashboardPage = () => {
   const [deletingMemberId, setDeletingMemberId] = useState<string | null>(null)
   const [deletingRelationId, setDeletingRelationId] = useState<string | null>(null)
   const [deletingUnionId, setDeletingUnionId] = useState<string | null>(null)
+  const [editingUnion, setEditingUnion] = useState<FamilyUnion | null>(null)
   const [pageByTab, setPageByTab] = useState<Record<TabType, number>>({
     members: 1,
     relationships: 1,
@@ -117,10 +120,10 @@ const AdminDashboardPage = () => {
   }, [data?.unions, unionsFiltered])
 
   const memberById = useMemo(() => {
-    const map = new Map<string, (typeof sortedMembers)[number]>()
-    sortedMembers.forEach((member) => map.set(member.id, member))
+    const map = new Map<string, FamilyMember>()
+    ;(data?.members ?? []).forEach((member) => map.set(member.id, member))
     return map
-  }, [sortedMembers])
+  }, [data?.members])
 
   const getTotalPages = (length: number) => Math.max(1, Math.ceil(length / PAGE_SIZE) || 1)
 
@@ -394,7 +397,12 @@ const AdminDashboardPage = () => {
                           {union.dateDebut && <span className={styles.tableMuted}>Depuis {new Date(union.dateDebut).getFullYear()}</span>}
                         </div>
                         <div className={styles.tableActions}>
-                          <button className={styles.actionBtn} onClick={() => setDeletingUnionId(union.id)}>Supprimer</button>
+                          <button className={styles.actionBtn} onClick={() => setEditingUnion(union)}>
+                            Modifier
+                          </button>
+                          <button className={styles.actionBtn} onClick={() => setDeletingUnionId(union.id)}>
+                            Supprimer
+                          </button>
                         </div>
                       </div>
                     )
@@ -441,6 +449,13 @@ const AdminDashboardPage = () => {
         isOpen={showAddUnionModal}
         onClose={() => setShowAddUnionModal(false)}
         members={data?.members || []}
+      />
+
+      <EditUnionModal
+        isOpen={Boolean(editingUnion)}
+        union={editingUnion}
+        members={data?.members || []}
+        onClose={() => setEditingUnion(null)}
       />
 
       <DeleteConfirmModal 

@@ -1,22 +1,48 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
-import type { FamilyMember } from '../../types/family'
+import type { FamilyMember, FamilyUnion } from '../../types/family'
 import styles from './MemberDetailsModal.module.css'
 
 interface MemberDetailsModalProps {
   member: FamilyMember | null
   onClose: () => void
-  partnerOf?: FamilyMember
+  unions?: Array<{
+    partner: FamilyMember | null | undefined
+    union: FamilyUnion
+  }>
+  isLineageMember?: boolean
 }
 
-const MemberDetailsModal = ({ member, onClose, partnerOf }: MemberDetailsModalProps) => {
+const MemberDetailsModal = ({ member, onClose, unions, isLineageMember }: MemberDetailsModalProps) => {
   if (!member) return null
   const [isPhotoOpen, setIsPhotoOpen] = useState(false)
 
   const initials = `${member.nom?.[0] ?? ''}${member.prenom?.[0] ?? ''}`.trim().toUpperCase()
-  const relationshipLabel = partnerOf
-    ? `${member.genre === 'homme' ? 'Époux' : 'Épouse'} de ${partnerOf.nom} ${partnerOf.prenom}`
-    : `${member.isFamilyHead ? 'Chef de famille' : 'Membre de la lignée'} · ${member.genre === 'homme' ? 'Homme' : 'Femme'}`
+  const unionStatusParts = useMemo(() => {
+    if (!unions?.length) return []
+
+    const toTimestamp = (value?: string | null) => (value ? new Date(value).getTime() : Number.MAX_SAFE_INTEGER)
+
+    return [...unions]
+      .sort((a, b) => toTimestamp(a.union.dateDebut) - toTimestamp(b.union.dateDebut))
+      .map(({ union, partner }) => {
+        const partnerName = partner ? `${partner.nom} ${partner.prenom}` : 'Partenaire inconnu'
+        switch (union.typeRelation) {
+          case 'mariage':
+            return `${member.genre === 'homme' ? 'Époux' : 'Épouse'} de ${partnerName}`
+          case 'divorce':
+            return `${member.genre === 'homme' ? 'Divorcé' : 'Divorcée'} avec ${partnerName}`
+          case 'union_libre':
+            return `En union libre avec ${partnerName}`
+          default:
+            return partnerName
+        }
+      })
+  }, [member.genre, unions])
+
+  const relationshipLabelBase = member.isFamilyHead ? 'Chef de famille' : isLineageMember ? 'Membre de la lignée' : ''
+  const relationshipLabelParts = relationshipLabelBase ? [relationshipLabelBase, ...unionStatusParts] : unionStatusParts
+  const relationshipLabel = relationshipLabelParts.filter(Boolean).join(' · ')
 
   const birthText = member.dateNaissance
     ? `Né(e) le ${new Date(member.dateNaissance).toLocaleDateString('fr-FR')}`

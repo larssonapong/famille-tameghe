@@ -210,7 +210,15 @@ function buildTreeData(
   const parentsByChild = new Map<string, string[]>()
   const unionsByMember = new Map<string, Array<{ unionId: string; partnerId: string; unionType: string }>>()
 
+  const unionKeyMap = new Map<string, string>()
+
+  const toUnionKey = (parentA: string, parentB: string) => {
+    const [first, second] = [parentA, parentB].sort()
+    return `${first}::${second}`
+  }
+
   payload.unions.forEach((union) => {
+    unionKeyMap.set(toUnionKey(union.partenaireAId, union.partenaireBId), union.id)
     if (!unionsByMember.has(union.partenaireAId)) {
       unionsByMember.set(union.partenaireAId, [])
     }
@@ -235,19 +243,23 @@ function buildTreeData(
       parentsByChild.set(relationship.childId, [])
     }
     parentsByChild.get(relationship.childId)!.push(relationship.parentId)
+  })
 
-    const childParents = parentsByChild.get(relationship.childId)!
-    if (childParents.length === 2) {
-      const union = payload.unions.find(
-        (u) =>
-          (u.partenaireAId === childParents[0] && u.partenaireBId === childParents[1]) ||
-          (u.partenaireAId === childParents[1] && u.partenaireBId === childParents[0]),
-      )
-      if (union) {
-        if (!childrenByUnion.has(union.id)) {
-          childrenByUnion.set(union.id, [])
+  parentsByChild.forEach((parentIds, childId) => {
+    const uniqueParents = Array.from(new Set(parentIds))
+    if (uniqueParents.length < 2) {
+      return
+    }
+
+    for (let i = 0; i < uniqueParents.length - 1; i += 1) {
+      for (let j = i + 1; j < uniqueParents.length; j += 1) {
+        const key = toUnionKey(uniqueParents[i], uniqueParents[j])
+        const unionId = unionKeyMap.get(key)
+        if (!unionId) continue
+        if (!childrenByUnion.has(unionId)) {
+          childrenByUnion.set(unionId, [])
         }
-        childrenByUnion.get(union.id)!.push(relationship.childId)
+        childrenByUnion.get(unionId)!.push(childId)
       }
     }
   })
@@ -259,11 +271,20 @@ function buildTreeData(
 
   const uniqueRoots = roots.length ? roots : payload.members.filter((member) => !parentsByChild.has(member.id))
 
-  return uniqueRoots
+  const rootNodes = uniqueRoots
     .map((member) =>
       buildNodeWithUnions(member.id, membersMap, childrenByUnion, unionsByMember, generationFilter, new Set()),
     )
     .filter((node): node is FamilyNodeDatum => Boolean(node))
+
+  if (!rootNodes.length) {
+    return []
+  }
+
+  const sortedRoots = rootNodes.sort((a, b) => compareRoots(a, b))
+  const preferredRoot = sortedRoots[0]
+
+  return [preferredRoot]
 }
 
 function buildNodeWithUnions(
@@ -326,6 +347,42 @@ function buildNodeWithUnions(
     attributes: buildAttributes(member),
     children: unionNodes,
   }
+}
+
+function computeRootScore(node: FamilyNodeDatum): number {
+  const descendantWeight = countDescendants(node)
+  const generationPenalty = node.member?.generationIndex ?? 99
+  const headBonus = node.member?.isFamilyHead ? descendantWeight * 10 : 0
+  return descendantWeight * 100 - generationPenalty + headBonus
+}
+
+function compareRoots(a: FamilyNodeDatum, b: FamilyNodeDatum): number {
+  const genA = a.member?.generationIndex ?? Number.POSITIVE_INFINITY
+  const genB = b.member?.generationIndex ?? Number.POSITIVE_INFINITY
+  if (genA !== genB) {
+    return genA - genB
+  }
+
+  const headA = a.member?.isFamilyHead ? 1 : 0
+  const headB = b.member?.isFamilyHead ? 1 : 0
+  if (headA !== headB) {
+    return headB - headA
+  }
+
+  const scoreDiff = computeRootScore(b) - computeRootScore(a)
+  if (scoreDiff !== 0) {
+    return scoreDiff
+  }
+
+  const nameA = `${a.member?.nom ?? ''} ${a.member?.prenom ?? ''}`
+  const nameB = `${b.member?.nom ?? ''} ${b.member?.prenom ?? ''}`
+  return nameA.localeCompare(nameB)
+}
+
+function countDescendants(node: FamilyNodeDatum): number {
+  const children = node.children ?? []
+  if (!children.length) return 1
+  return 1 + children.reduce((sum, child) => sum + countDescendants(child as FamilyNodeDatum), 0)
 }
 
 function buildAttributes(member: FamilyMember): Record<string, string | number | boolean> {
