@@ -15,6 +15,8 @@ type FamilyNodeDatum = RawNodeDatum & {
   unionId?: string
   unionType?: string
   isUnionNode?: boolean
+  nodeKey: string
+  hasCollapsedChildren?: boolean
 }
 
 interface FamilyTreeCanvasProps {
@@ -53,6 +55,66 @@ function FamilyTreeCanvas({
     return buildTreeData(data, generationFilter)
   }, [data, generationFilter])
 
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!treeData.length) {
+      setExpandedNodes(new Set())
+      return
+    }
+    const rootKeys = treeData.map((node) => node.nodeKey)
+    setExpandedNodes((prev) => {
+      const next = new Set<string>(rootKeys)
+      rootKeys.forEach((key) => {
+        if (prev.has(key)) {
+          next.add(key)
+        }
+      })
+      return next
+    })
+  }, [treeData])
+
+  const toggleNodeExpansion = useCallback((nodeKey: string) => {
+    setExpandedNodes((prev) => {
+      const next = new Set(prev)
+      if (next.has(nodeKey)) {
+        next.delete(nodeKey)
+      } else {
+        next.add(nodeKey)
+      }
+      return next
+    })
+  }, [])
+
+  const withCollapsedState = useCallback(
+    (nodes: FamilyNodeDatum[]): FamilyNodeDatum[] =>
+      nodes.map((node) => {
+        const hasChildren = (node.children?.length ?? 0) > 0
+        if (!hasChildren) {
+          return { ...node, hasCollapsedChildren: false }
+        }
+        const isExpanded = expandedNodes.has(node.nodeKey)
+        if (!isExpanded) {
+          return {
+            ...node,
+            hasCollapsedChildren: true,
+            children: [],
+          }
+        }
+        return {
+          ...node,
+          hasCollapsedChildren: false,
+          children: node.children ? withCollapsedState(node.children as FamilyNodeDatum[]) : [],
+        }
+      }),
+    [expandedNodes],
+  )
+
+  const interactiveTreeData = useMemo(() => {
+    if (!treeData.length) return treeData
+    return withCollapsedState(treeData)
+  }, [treeData, withCollapsedState])
+
   const renderNode = useCallback(
     ({ nodeDatum }: CustomNodeElementProps) => {
       const familyNode = nodeDatum as TreeNodeDatum & {
@@ -61,10 +123,17 @@ function FamilyTreeCanvas({
         unionId?: string
         unionType?: string
         isUnionNode?: boolean
+        nodeKey: string
+        hasCollapsedChildren?: boolean
       }
       const member = familyNode.member
       const partner = familyNode.partner
       if (!member) return null
+
+      const hasVisibleChildren = Boolean(familyNode.children?.length)
+      const hasHiddenChildren = Boolean(familyNode.hasCollapsedChildren)
+      const canToggle = hasVisibleChildren || hasHiddenChildren
+      const isExpanded = expandedNodes.has(familyNode.nodeKey)
 
       const ageLabel = buildAgeLabel(member.dateNaissance, member.dateDeces)
       const frameColor =
@@ -92,8 +161,27 @@ function FamilyTreeCanvas({
       const rightX = gap / 2
       const cardY = -cardHeight / 2
 
+      const handleToggleClick = (event: React.MouseEvent) => {
+        event.stopPropagation()
+        if (canToggle) {
+          toggleNodeExpansion(familyNode.nodeKey)
+        }
+      }
+
       return (
         <g>
+          {canToggle ? (
+            <foreignObject width={28} height={28} x={leftX - 36} y={-14}>
+              <button
+                type="button"
+                className={`${styles.toggleButton} ${isExpanded ? styles.toggleExpanded : styles.toggleCollapsed}`}
+                onClick={handleToggleClick}
+                aria-label={isExpanded ? 'Réduire cette branche' : 'Déplier cette branche'}
+              >
+                <span>{isExpanded ? '−' : '+'}</span>
+              </button>
+            </foreignObject>
+          ) : null}
           <foreignObject width={cardWidth} height={cardHeight} x={leftX} y={cardY}>
             <div
               role="button"
@@ -180,13 +268,13 @@ function FamilyTreeCanvas({
         </g>
       )
     },
-    [onSelectMember],
+    [onSelectMember, expandedNodes, toggleNodeExpansion],
   )
 
   return (
     <div className={styles.canvasContainer} ref={containerRef}>
       <Tree
-        data={treeData}
+        data={interactiveTreeData}
         translate={{ x: dimensions.width / 2, y: defaultTranslate.y }}
         orientation="vertical"
         zoomable
@@ -311,6 +399,7 @@ function buildNodeWithUnions(
     return {
       name: `${member.nom} ${member.prenom}`,
       member,
+      nodeKey: `member-${member.id}`,
       attributes: buildAttributes(member),
       children: [],
     }
@@ -332,6 +421,7 @@ function buildNodeWithUnions(
       unionId: union.unionId,
       unionType: union.unionType,
       isUnionNode: true,
+      nodeKey: `union-${union.unionId}-${member.id}`,
       attributes: buildAttributes(member),
       children: childNodes,
     }
@@ -344,6 +434,7 @@ function buildNodeWithUnions(
   return {
     name: `${member.nom} ${member.prenom}`,
     member,
+    nodeKey: `member-${member.id}`,
     attributes: buildAttributes(member),
     children: unionNodes,
   }
